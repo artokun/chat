@@ -1,13 +1,22 @@
 import React, { Component } from 'react'
 import firebase from 'firebase'
+const provider = new firebase.auth.GoogleAuthProvider()
 
 class App extends Component {
   state = {
     message: '',
-    messages: {}
+    messages: {},
+    user: null
   }
 
   componentDidMount() {
+    firebase.auth().onAuthStateChanged(user => {
+      if (user) {
+        return this.setState({ user })
+      }
+      this.setState({ user: false })
+    })
+
     const db = firebase.database()
     this.messagesRef = db.ref('messages')
 
@@ -24,8 +33,15 @@ class App extends Component {
 
   handleSubmit(event) {
     event.preventDefault()
-    this.messagesRef.push({ text: this.state.message, user: 123 })
+    this.messagesRef.push({
+      text: this.state.message,
+      user: this.state.user.displayName || 'anon'
+    })
     this.setState({ message: '' })
+  }
+
+  handleAuth() {
+    firebase.auth().signInWithPopup(provider)
   }
 
   renderMessages() {
@@ -45,6 +61,9 @@ class App extends Component {
   render() {
     return (
       <div>
+        <button onClick={this.handleAuth.bind(this)}>
+          {this.state.user ? 'Sign Out' : 'Sign In'}
+        </button>
         <form onSubmit={this.handleSubmit.bind(this)}>
           <input
             type="text"
