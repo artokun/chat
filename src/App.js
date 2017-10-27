@@ -41,7 +41,17 @@ class App extends Component {
   }
 
   handleAuth() {
+    if (this.state.user) {
+      return firebase.auth().signOut()
+    }
     firebase.auth().signInWithPopup(provider)
+  }
+
+  handleClear() {
+    firebase
+      .database()
+      .ref('messages')
+      .set([])
   }
 
   renderMessages() {
@@ -64,6 +74,7 @@ class App extends Component {
         <button onClick={this.handleAuth.bind(this)}>
           {this.state.user ? 'Sign Out' : 'Sign In'}
         </button>
+        <button onClick={this.handleClear.bind(this)}>Clear Chat</button>
         <form onSubmit={this.handleSubmit.bind(this)}>
           <input
             type="text"
